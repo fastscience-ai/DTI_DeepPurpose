@@ -3,6 +3,7 @@ from DeepPurpose import utils, dataset
 from DeepPurpose import DTI as models
 import pandas as pd
 import warnings
+import torch
 import os
 import numpy as np
 warnings.filterwarnings("ignore")
@@ -128,7 +129,7 @@ def make_dacon_sample_submission(y_pred_dacon, drug_encoding, target_encoding):
 
 def main():
     #Convert data format from our data to DeepPurpose
-    data_repreprocess("./dataset", "new_test_protein.csv", "dti_train.txt")
+    data_repreprocess("./dataset", "new_train_protein.csv", "dti_train.txt")
     data_repreprocess("./dataset", "new_test_protein.csv", "dti_test.txt")
     #Data read
     X_drugs_train, X_targets_train, y_train = dataset.read_file_training_dataset_drug_target_pairs('./dataset/new_dti_train.txt')
@@ -139,7 +140,7 @@ def main():
     print('Score 1: ' + str(y_test[0]))
 
     fout=open("DTI_results_soo.csv", "w")
-    drug_encoding_list = ["MPNN", "Morgan", "Pubchem", "rdkit_2d_normalized", "ESPF", "ErG", "CNN", "CNN_RNN", "Transformer" ]
+    drug_encoding_list = ["MPNN", "ESPF", "Transformer", "CNN", "CNN_RNN", "Morgan", "Pubchem", "rdkit_2d_normalized", "ErG" ]
     target_encoding_list = ["ESPF", "CNN", "CNN_RNN", "Transformer", "AAC", "PseudoAAC", "Conjoint_triad", "Quasi-seq"]
 
     for drug_encoding in drug_encoding_list:
@@ -154,8 +155,8 @@ def main():
             config = utils.generate_config(drug_encoding = drug_encoding, 
                                  target_encoding = target_encoding, 
                                  cls_hidden_dims = [1024,1024,512], 
-                                 train_epoch = 50, 
-                                 LR = 0.001, 
+                                 train_epoch = 100, 
+                                 LR = 0.005, 
                                  batch_size = 128,
                                  hidden_dim_drug = 128,
                                  mpnn_hidden_size = 128,
@@ -177,7 +178,8 @@ def main():
             fout.write("DRUG ENCODING:,"+str(drug_encoding)+",TARGET ENCODING:,"+str(target_encoding) +",PIC_50 Normalized RMSE:,"+str(pic50_nrmse)+",IC_50_nM Normalized RMSE:,"+str(ic50_nrmse)+",DACON Score:,"+str(dacon_score)+"\n")
             fout_drug.write("DRUG ENCODING:,"+str(drug_encoding)+",TARGET ENCODING:,"+str(target_encoding) +",PIC_50 Normalized RMSE:,"+str(pic50_nrmse)+",IC_50_nM Normalized RMSE:,"+str(ic50_nrmse)+",DACON Score:,"+str(dacon_score)+"\n")
 
-            #Test model with the dacon data
+            #Test model with the dacon dat
+            # [NOTE!!] you should delete the first row of test.csva
             drug, target, score = test_with_dacon_testset("./dataset/test.csv")
             X_pred = utils.data_process(drug, target, score,
                                         drug_encoding, target_encoding,
@@ -189,6 +191,5 @@ def main():
 
 if __name__ == "__main__":
 
-    # Restrict PyTorch to only use GPU 7
-    os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+    device = torch.device( "cpu")
     main()
