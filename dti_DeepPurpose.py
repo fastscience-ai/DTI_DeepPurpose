@@ -121,7 +121,7 @@ def make_dacon_sample_submission(y_pred_dacon, drug_encoding, target_encoding):
     file_out = open("sample_submission_"+drug_encoding+"_"+target_encoding+".csv", "w")
     file_out.write("ID,IC50_nM\n")
     for i in range(len(y_pred_dacon)):
-        file_out.write("TEST_"+f"{i:03},"+str(y_pred_dacon[i])+"\n")
+        file_out.write("TEST_"+f"{i:03},"+str(pic50_to_ic50_nM(y_pred_dacon[i]))+"\n")
     file_out.close()
 
 
