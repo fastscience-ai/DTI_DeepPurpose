@@ -137,11 +137,12 @@ def main():
     print('Target 1: ' + X_targets_test[0])
     print('Score 1: ' + str(y_test[0]))
 
-    fout=open("DTI_results_soo.txt", "w")
-    drug_encoding_list = ["MPNN", "DGL_GCN", "DGL_NeuralFP", "DGL_GIN_AttrMasking", "DGL_GIN_ContextPred", "DGL_AttentiveFP", "Morgan", "Pubchem", "rdkit_2d_normalized", "ESPF", "ErG", "CNN", "CNN_RNN", "Transformer" ]
-    target_encoding_list = ["AAC", "PseudoAAC", "Conjoint_triad", "Quasi-seq", "ESPF", "CNN", "CNN_RNN", "Transformer"]
+    fout=open("DTI_results_soo.csv", "w")
+    drug_encoding_list = ["DGL_GCN", "DGL_NeuralFP", "DGL_GIN_AttrMasking", "DGL_GIN_ContextPred", "DGL_AttentiveFP", "Morgan", "Pubchem", "rdkit_2d_normalized", "ESPF", "ErG", "CNN", "CNN_RNN", "Transformer", "MPNN" ]
+    target_encoding_list = ["ESPF", "CNN", "CNN_RNN", "Transformer", "AAC", "PseudoAAC", "Conjoint_triad", "Quasi-seq"]
 
     for drug_encoding in drug_encoding_list:
+        fout_drug = open("DTI_results_"+str(drug_encoding)+".csv","w")
         for target_encoding in target_encoding_list:
             print(drug_encoding, target_encoding)
             # data split (lets just use their function for now)
@@ -173,6 +174,8 @@ def main():
             pic50_nrmse, ic50_nrmse, dacon_score = error_metrics(y, y_pred_custom)
             print("DRUG ENCODING:", drug_encoding, "TARGET ENCODING:", target_encoding ,"PIC_50 Normalized RMSE:", pic50_nrmse,"IC_50_nM Normalized RMSE:", ic50_nrmse,"DACON Score:", dacon_score)
             fout.write("DRUG ENCODING:,"+str(drug_encoding)+",TARGET ENCODING:,"+str(target_encoding) +",PIC_50 Normalized RMSE:,"+str(pic50_nrmse)+",IC_50_nM Normalized RMSE:,"+str(ic50_nrmse)+",DACON Score:,"+str(dacon_score)+"\n")
+            fout_drug.write("DRUG ENCODING:,"+str(drug_encoding)+",TARGET ENCODING:,"+str(target_encoding) +",PIC_50 Normalized RMSE:,"+str(pic50_nrmse)+",IC_50_nM Normalized RMSE:,"+str(ic50_nrmse)+",DACON Score:,"+str(dacon_score)+"\n")
+
             #Test model with the dacon data
             drug, target, score = test_with_dacon_testset("./dataset/test.csv")
             X_pred = utils.data_process(drug, target, score,
@@ -180,6 +183,7 @@ def main():
                                         split_method='no_split')
             y_pred_dacon = model.predict(X_pred)
             make_dacon_sample_submission(y_pred_dacon,drug_encoding, target_encoding)
+        fout_drug.close()
     fout.close()
 
 if __name__ == "__main__":
