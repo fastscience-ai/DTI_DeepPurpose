@@ -17,14 +17,24 @@ def data_repreprocess(path_to_dataset, file_name, new_file_name):
     """
     data = pd.read_csv(path_to_dataset+"/"+file_name)
     new_data = data[["Smiles", "Sequence", "pIC50"]]
-    new_data.to_csv(path_to_dataset+"/"+new_file_name, sep='\t', index=False)
+    print(new_data)
+    new_data.to_csv(path_to_dataset+"/"+new_file_name, sep=' ', index=False)
     # delete first row as it makes error
     file_in = open(path_to_dataset+"/"+new_file_name, "r")
     file_out = open(path_to_dataset+"/new_"+new_file_name, "w")
     count = 0
     for line in file_in.readlines():
        if count > 0:
-           file_out.write(line)
+           if len(line.split(" ")[2])>10:
+               print(line)
+           else:
+               file_out.write(line)
+           #try:
+           #    score = float(line.split("\t")[2])
+           #    file_out.write(line)
+           #except:
+           #    print(line)
+           #    pass
        count=count+1
     file_in.close()
     file_out.close()
